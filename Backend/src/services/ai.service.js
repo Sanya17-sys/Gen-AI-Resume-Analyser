@@ -137,14 +137,34 @@ INPUT DATA
                       Job Description:
                       ${jobDescription}
 `;
-    const response = await axios.post("http://localhost:11434/api/generate", {
-      model: "mistral",
-      prompt: prompt,
-      stream: false,
-      options: {
-        temperature: 0.2,
-      },
-    });
+   const response = await axios.post(
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
+  {
+    contents: [
+      {
+        parts: [
+          {
+            text: prompt
+          }
+        ]
+      }
+    ]
+  },
+  {
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": process.env.GEMINI_API_KEY
+    }
+  }
+);
+
+let raw =
+  response.data?.candidates?.[0]?.content?.parts
+    ?.map(part => part.text || "")
+    .join("") || "";
+
+raw = raw.replace(/```json/g, "").replace(/```/g, "").trim();
+raw = extractJSON(raw);
 
     let raw = response.data.response;
 
